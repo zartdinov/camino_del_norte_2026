@@ -130,6 +130,11 @@
     .stat.accent .v { color: var(--amber-soft); }
     .stat.accent2 .v { color: var(--sky-soft); }
 
+    /* collapsed pill only shows on mobile via @media below */
+    .hero-collapsed { display: none; }
+    /* expanded content always visible on desktop */
+    .hero-expanded { display: block; }
+
     .hero-foot {
       margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--stroke);
       display: flex; gap: 14px; flex-wrap: wrap;
@@ -279,7 +284,29 @@
       #daycard { bottom: 168px; }
     }
     @media (max-width: 620px) {
-      #hero { width: calc(100vw - 28px); left: 14px; top: 14px; padding: 15px 16px; }
+      /* hero collapses to a small pill by default; tap to expand */
+      #hero {
+        width: auto; max-width: calc(100vw - 28px);
+        left: 14px; top: 14px; padding: 10px 14px;
+        cursor: pointer;
+      }
+      #hero .hero-collapsed {
+        display: flex; align-items: center; gap: 10px;
+      }
+      #hero .hero-collapsed .h-title {
+        font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 600;
+        color: #fff; white-space: nowrap;
+      }
+      #hero .hero-collapsed .h-toggle {
+        width: 22px; height: 22px; display: grid; place-items: center;
+        border-radius: 7px; background: rgba(255,255,255,0.07);
+        flex-shrink: 0; transition: transform .25s var(--ease);
+      }
+      #hero .hero-expanded { display: none; }
+      #hero.open { padding: 15px 16px; cursor: default; width: calc(100vw - 28px); }
+      #hero.open .hero-collapsed { display: none; }
+      #hero.open .hero-expanded { display: block; }
+      #hero.open .hero-collapsed .h-toggle { transform: rotate(180deg); }
       #hero h1 { font-size: 23px; }
       .hero-foot { display: none; }
       #daycard { display: none; }
@@ -306,12 +333,23 @@
 
   <!-- Hero / stats -->
   <section id="hero" class="hud glass" aria-label="Trip overview">
-    <span class="eyebrow"><span class="dot"></span><span id="kind">Walking tour</span></span>
-    <h1 id="title">Camino del Norte</h1>
-    <div class="sub" id="subtitle">+ Muxía + Finisterre</div>
-    <div class="dates" id="dates">20 Apr 2026 – 22 May 2026</div>
-    <div class="stat-grid" id="statGrid"></div>
-    <div class="hero-foot" id="heroFoot"></div>
+    <!-- mobile collapsed pill -->
+    <div class="hero-collapsed" aria-hidden="true">
+      <span class="eyebrow" style="margin:0"><span class="dot"></span></span>
+      <span class="h-title">Camino del Norte</span>
+      <span class="h-toggle">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </span>
+    </div>
+    <!-- expanded content (always visible on desktop, toggled on mobile) -->
+    <div class="hero-expanded">
+      <span class="eyebrow"><span class="dot"></span><span id="kind">Walking tour</span></span>
+      <h1 id="title">Camino del Norte</h1>
+      <div class="sub" id="subtitle">+ Muxía + Finisterre</div>
+      <div class="dates" id="dates">20 Apr 2026 – 22 May 2026</div>
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="hero-foot" id="heroFoot"></div>
+    </div>
   </section>
 
   <!-- Camino life -->
@@ -958,6 +996,14 @@
   }
 
   boot();
+
+  // Mobile hero toggle — only wires up on small screens
+  document.getElementById("hero").addEventListener("click", function(e) {
+    if (window.innerWidth > 620) return;
+    // Don't toggle if clicking inside the expanded content
+    if (this.classList.contains("open") && !e.target.closest(".hero-collapsed")) return;
+    this.classList.toggle("open");
+  });
   </script>
 </body>
 </html>
